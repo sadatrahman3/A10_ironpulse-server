@@ -92,3 +92,27 @@ export const checkNotBlocked = async (req, res, next) => {
     next(error);
   }
 };
+
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return next();
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await getUserFromDb(decoded.id);
+
+    if (user) {
+      req.user = {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role: user.role || "user",
+        status: user.status || "active",
+      };
+    }
+    next();
+  } catch {
+    next();
+  }
+};
