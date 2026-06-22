@@ -53,6 +53,7 @@ router.post("/register", async (req, res, next) => {
     setTokenCookie(res, token);
 
     res.status(201).json({
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -96,6 +97,7 @@ router.post("/login", async (req, res, next) => {
     setTokenCookie(res, token);
 
     res.json({
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -117,7 +119,14 @@ router.post("/login", async (req, res, next) => {
 
 router.get("/me", async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    let token = null;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
+    if (!token) {
+      token = req.cookies.token;
+    }
 
     if (token) {
       try {
@@ -126,6 +135,7 @@ router.get("/me", async (req, res, next) => {
 
         if (user) {
           return res.json({
+            token,
             user: {
               id: user._id,
               name: user.name,
@@ -153,6 +163,7 @@ router.get("/me", async (req, res, next) => {
         setTokenCookie(res, newToken);
 
         return res.json({
+          token: newToken,
           user: {
             id: user._id,
             name: user.name,
@@ -222,6 +233,7 @@ router.post("/google", async (req, res, next) => {
     setTokenCookie(res, token);
 
     res.json({
+      token,
       user: {
         id: user._id,
         name: user.name,

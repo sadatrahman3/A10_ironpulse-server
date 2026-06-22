@@ -33,7 +33,14 @@ export const clearTokenCookie = (res) => {
 
 export const verifyToken = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    let token = null;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
+    if (!token) {
+      token = req.cookies.token;
+    }
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
     }
@@ -95,7 +102,14 @@ export const checkNotBlocked = async (req, res, next) => {
 
 export const optionalAuth = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    let token = null;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
+    if (!token) {
+      token = req.cookies.token;
+    }
     if (!token) return next();
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
