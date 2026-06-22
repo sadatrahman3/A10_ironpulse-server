@@ -4,6 +4,15 @@ import { verifyToken, checkNotBlocked } from "../middleware/auth.js";
 
 const router = Router({ mergeParams: true });
 
+router.get("/count/:postId", async (req, res, next) => {
+  try {
+    const count = await Comment.countDocuments({ postId: req.params.postId });
+    res.json({ count });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:postId", async (req, res, next) => {
   try {
     const comments = await Comment.find({ postId: req.params.postId })

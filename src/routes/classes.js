@@ -40,6 +40,19 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.get("/stats/categories", async (req, res, next) => {
+  try {
+    const stats = await Class.aggregate([
+      { $match: { status: "approved" } },
+      { $group: { _id: "$category", count: { $sum: 1 }, avgPrice: { $avg: "$price" } } },
+      { $sort: { count: -1 } },
+    ]);
+    res.json(stats);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/featured", async (req, res, next) => {
   try {
     const classes = await Class.find({ status: "approved" })
