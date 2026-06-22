@@ -9,7 +9,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 router.post("/create-checkout-session", verifyToken, checkNotBlocked, async (req, res, next) => {
   try {
+    if (req.user.role !== "user") {
+      return res.status(403).json({ message: "Only regular users can book classes" });
+    }
+
     const { classId, className, trainerName, price, image } = req.body;
+
+    if (!classId || !className || !price) {
+      return res.status(400).json({ message: "Missing required payment information" });
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
