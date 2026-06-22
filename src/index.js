@@ -80,6 +80,9 @@ const startServer = async () => {
           }
         });
         response.text().then((text) => res.send(text));
+      }).catch((err) => {
+        console.error("Better Auth error:", err.message);
+        res.status(500).json({ message: "Authentication service error" });
       });
     });
 
