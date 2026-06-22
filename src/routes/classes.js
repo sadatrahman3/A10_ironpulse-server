@@ -51,6 +51,24 @@ router.get("/featured", async (req, res, next) => {
   }
 });
 
+router.get("/admin/all", verifyToken, requireRole("admin"), async (req, res, next) => {
+  try {
+    const classes = await Class.find().sort({ createdAt: -1 });
+    res.json(classes);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/trainer/me", verifyToken, requireRole("trainer"), async (req, res, next) => {
+  try {
+    const classes = await Class.find({ trainerId: req.user.id }).sort({ createdAt: -1 });
+    res.json(classes);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/trainer/:trainerId", verifyToken, requireRole("trainer"), async (req, res, next) => {
   try {
     const classes = await Class.find({ trainerId: req.user.id }).sort({ createdAt: -1 });
@@ -165,15 +183,6 @@ router.patch("/:id/status", verifyToken, requireRole("admin"), async (req, res, 
     }
 
     res.json(updated);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get("/admin/all", verifyToken, requireRole("admin"), async (req, res, next) => {
-  try {
-    const classes = await Class.find().sort({ createdAt: -1 });
-    res.json(classes);
   } catch (error) {
     next(error);
   }
