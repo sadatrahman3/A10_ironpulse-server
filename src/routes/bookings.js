@@ -41,7 +41,13 @@ router.get("/trainer", verifyToken, async (req, res, next) => {
 router.get("/class/:classId/students", verifyToken, async (req, res, next) => {
   try {
     const bookings = await Booking.find({ classId: req.params.classId }).select("userId userName userEmail");
-    res.json(bookings);
+    const uniqueStudents = bookings.map((b) => ({
+      userId: b.userId,
+      userName: b.userName,
+      userEmail: b.userEmail,
+    }));
+    const unique = [...new Map(uniqueStudents.map((s) => [s.userId, s])).values()];
+    res.json(unique);
   } catch (error) {
     next(error);
   }
