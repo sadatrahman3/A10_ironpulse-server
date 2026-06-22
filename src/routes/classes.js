@@ -84,7 +84,7 @@ router.get("/trainer/me", verifyToken, requireRole("trainer"), async (req, res, 
 
 router.get("/trainer/:trainerId", verifyToken, requireRole("trainer"), async (req, res, next) => {
   try {
-    const classes = await Class.find({ trainerId: req.user.id }).sort({ createdAt: -1 });
+    const classes = await Class.find({ trainerId: req.params.trainerId }).sort({ createdAt: -1 });
     res.json(classes);
   } catch (error) {
     next(error);

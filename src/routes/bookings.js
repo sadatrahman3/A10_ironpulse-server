@@ -73,12 +73,14 @@ router.post("/", verifyToken, checkNotBlocked, async (req, res, next) => {
 
     const booking = new Booking({
       userId: req.user.id,
+      userName: req.user.name,
+      userEmail: req.user.email,
       classId,
       trainerId: fitnessClass.trainerId,
       className: fitnessClass.name,
       trainerName: fitnessClass.trainerName,
       schedule: fitnessClass.schedule,
-      amount,
+      amount: fitnessClass.price,
       transactionId,
     });
 

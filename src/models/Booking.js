@@ -3,6 +3,8 @@ import { Schema, model } from "mongoose";
 const bookingSchema = new Schema(
   {
     userId: { type: String, required: true },
+    userName: { type: String, default: "" },
+    userEmail: { type: String, default: "" },
     classId: { type: Schema.Types.ObjectId, ref: "Class", required: true },
     trainerId: { type: String, required: true },
     className: { type: String, required: true },
