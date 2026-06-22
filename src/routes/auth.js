@@ -1,5 +1,6 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
 import { getAuthInstance } from "../config/auth.js";
 import { getDb } from "../config/db.js";
 import { generateToken, setTokenCookie, clearTokenCookie, verifyToken } from "../middleware/auth.js";
@@ -9,7 +10,13 @@ const router = Router();
 
 const getUserFromDb = async (userId) => {
   const db = getDb();
-  return db.collection("user").findOne({ _id: userId });
+  let user = await db.collection("user").findOne({ _id: userId });
+  if (!user && typeof userId === "string") {
+    try {
+      user = await db.collection("user").findOne({ _id: new ObjectId(userId) });
+    } catch {}
+  }
+  return user;
 };
 
 router.post("/register", async (req, res, next) => {
@@ -36,6 +43,10 @@ router.post("/register", async (req, res, next) => {
     });
 
     const user = await getUserFromDb(result.user.id);
+    if (!user) {
+      console.error("Register: user created in Better Auth but not found in DB:", result.user.id);
+      return res.status(500).json({ message: "Registration failed: user could not be created" });
+    }
 
     const token = generateToken(user);
     setTokenCookie(res, token);
@@ -53,6 +64,7 @@ router.post("/register", async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("Register error:", error.message);
     if (error.message?.includes("already") || error.message?.includes("exists")) {
       return res.status(409).json({ message: "Email already registered" });
     }
@@ -74,6 +86,10 @@ router.post("/login", async (req, res, next) => {
     });
 
     const user = await getUserFromDb(result.user.id);
+    if (!user) {
+      console.error("Login: user authenticated but not found in DB:", result.user.id);
+      return res.status(500).json({ message: "Login failed: user record not found" });
+    }
 
     const token = generateToken(user);
     setTokenCookie(res, token);

@@ -6,6 +6,13 @@ let client;
 let authInstance;
 
 export const initAuth = async () => {
+  if (!process.env.BETTER_AUTH_SECRET) {
+    console.error("WARNING: BETTER_AUTH_SECRET is not set!");
+  }
+  if (!process.env.BETTER_AUTH_URL) {
+    console.error("WARNING: BETTER_AUTH_URL is not set!");
+  }
+
   client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
   const db = client.db();
@@ -21,10 +28,12 @@ export const initAuth = async () => {
       maxPasswordLength: 128,
     },
     socialProviders: {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID || "",
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      },
+      ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? {
+        google: {
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        },
+      } : {}),
     },
     user: {
       additionalFields: {
