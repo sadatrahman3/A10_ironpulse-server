@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import { initAuth, getAuthInstance } from "./config/auth.js";
 import { errorHandler, notFound } from "./middleware/error.js";
+import { requestLogger } from "./middleware/logger.js";
 
 import authRoutes from "./routes/auth.js";
 import classRoutes from "./routes/classes.js";
@@ -30,9 +31,14 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(requestLogger);
 
 app.get("/", (req, res) => {
   res.json({ message: "IronPulse API is running", status: "ok" });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "healthy", uptime: process.uptime(), timestamp: new Date().toISOString() });
 });
 
 app.use("/api/auth", authRoutes);

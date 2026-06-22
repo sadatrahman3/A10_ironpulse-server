@@ -101,6 +101,18 @@ router.patch("/:id/role", verifyToken, requireRole("admin"), async (req, res, ne
   }
 });
 
+router.get("/stats", verifyToken, requireRole("admin"), async (req, res, next) => {
+  try {
+    const db = getDb();
+    const totalUsers = await db.collection("user").countDocuments();
+    const totalTrainers = await db.collection("user").countDocuments({ role: "trainer" });
+    const totalAdmins = await db.collection("user").countDocuments({ role: "admin" });
+    res.json({ totalUsers, totalTrainers, totalAdmins });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/:id/demote", verifyToken, requireRole("admin"), async (req, res, next) => {
   try {
     const db = getDb();
