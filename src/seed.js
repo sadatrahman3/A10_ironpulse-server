@@ -245,6 +245,11 @@ const seed = async () => {
     console.log("User: john@ironpulse.com / Password123");
     console.log("=====================\n");
 
+    console.log("Summary:");
+    console.log(`  Users: 3 (1 admin, 1 trainer, 1 user)`);
+    console.log(`  Classes: ${classes.length}`);
+    console.log(`  Forum Posts: ${posts.length}`);
+
     process.exit(0);
   } catch (error) {
     console.error("Seed error:", error.message);
