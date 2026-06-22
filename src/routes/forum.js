@@ -32,10 +32,11 @@ router.get("/search", async (req, res, next) => {
   try {
     const { q } = req.query;
     if (!q) return res.json([]);
+    const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const posts = await ForumPost.find({
       $or: [
-        { title: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
+        { title: { $regex: safe, $options: "i" } },
+        { description: { $regex: safe, $options: "i" } },
       ],
     }).sort({ createdAt: -1 }).limit(10);
     res.json(posts);

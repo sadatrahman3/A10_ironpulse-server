@@ -58,7 +58,11 @@ router.put("/:commentId", verifyToken, async (req, res, next) => {
       return res.status(403).json({ message: "You can only edit your own comments" });
     }
 
-    comment.content = req.body.content;
+    if (!req.body.content || !req.body.content.trim()) {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
+
+    comment.content = req.body.content.trim();
     await comment.save();
     res.json(comment);
   } catch (error) {

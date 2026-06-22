@@ -153,7 +153,18 @@ router.put("/:id", verifyToken, requireRole("trainer"), async (req, res, next) =
       return res.status(403).json({ message: "You can only update your own classes" });
     }
 
-    const updated = await Class.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { name, description, image, category, difficulty, duration, price, schedule } = req.body;
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (description !== undefined) updates.description = description;
+    if (image !== undefined) updates.image = image;
+    if (category !== undefined) updates.category = category;
+    if (difficulty !== undefined) updates.difficulty = difficulty;
+    if (duration !== undefined) updates.duration = duration;
+    if (price !== undefined) updates.price = price;
+    if (schedule !== undefined) updates.schedule = schedule;
+
+    const updated = await Class.findByIdAndUpdate(req.params.id, updates, { new: true });
     res.json(updated);
   } catch (error) {
     next(error);

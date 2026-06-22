@@ -18,6 +18,7 @@ import trainerAppRoutes from "./routes/trainerApplications.js";
 import userRoutes from "./routes/users.js";
 import transactionRoutes from "./routes/transactions.js";
 import paymentRoutes from "./routes/payments.js";
+import statsRoutes from "./routes/stats.js";
 
 dotenv.config();
 
@@ -61,9 +62,7 @@ app.use("/api/trainer-applications", trainerAppRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/payments", paymentRoutes);
-
-app.use(notFound);
-app.use(errorHandler);
+app.use("/api/stats", statsRoutes);
 
 const PORT = process.env.PORT || 5000;
 
@@ -95,6 +94,9 @@ const startServer = async () => {
         res.status(500).json({ message: "Authentication service error" });
       });
     });
+
+    app.use(notFound);
+    app.use(errorHandler);
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

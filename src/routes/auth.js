@@ -1,5 +1,6 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { ObjectId } from "mongodb";
 import { getAuthInstance } from "../config/auth.js";
 import { getDb } from "../config/db.js";
@@ -168,6 +169,72 @@ router.get("/me", async (req, res, next) => {
 
     res.status(401).json({ message: "Not authenticated" });
   } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/google", async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential is required" });
+    }
+
+    // Verify the Google ID token
+    const tokenResponse = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`
+    );
+    const tokenData = await tokenResponse.json();
+
+    if (tokenData.error) {
+      return res.status(401).json({ message: "Invalid Google credential" });
+    }
+
+    const { email, name, picture, sub } = tokenData;
+    if (!email) {
+      return res.status(400).json({ message: "Google account has no email" });
+    }
+
+    // Check if user already exists
+    const db = getDb();
+    let user = await db.collection("user").findOne({ email });
+
+    if (!user) {
+      // Create new user via Better Auth with a random password
+      const auth = getAuthInstance();
+      const randomPassword = crypto.randomUUID() + "Aa1!";
+      const result = await auth.api.signUpEmail({
+        body: {
+          name: name || email.split("@")[0],
+          email,
+          password: randomPassword,
+          image: picture || "",
+        },
+      });
+
+      user = await db.collection("user").findOne({ _id: result.user.id });
+      if (!user) {
+        return res.status(500).json({ message: "Failed to create user" });
+      }
+    }
+
+    const token = generateToken(user);
+    setTokenCookie(res, token);
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: user.role || "user",
+        status: user.status || "active",
+        trainerApplicationStatus: user.trainerApplicationStatus || "none",
+        trainerFeedback: user.trainerFeedback || "",
+      },
+    });
+  } catch (error) {
+    console.error("Google auth error:", error.message);
     next(error);
   }
 });
